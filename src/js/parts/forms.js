@@ -1,26 +1,29 @@
 function forms() {
-    function sendForm(classForm) {
-        let form = document.querySelector(classForm),
-            statusMessage = document.createElement('div');
+    function sendForm(e) {
+        
+        let form = e,
+            statusMessage = document.createElement('div'),
+            input = form.querySelectorAll('input'),
+            textarea = form.querySelectorAll('textarea');
+        statusMessage.classList.add('status-message');
 
         form.addEventListener('submit', function (event) {
+            let innerCode;
             event.preventDefault();
-            form.appendChild(statusMessage);
+            let tel = form.querySelector('input[name=phone]');
 
             function postData() {
+                
                 return new Promise(function (resolve, reject) {
                     let request = new XMLHttpRequest(); // создаем запрос к серверу
                     request.open('POST', 'server.php'); // выставляем настройки запроса
-                    request.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+                    request.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
 
                     let formData = new FormData(form); //получаем все данные с формы
-                    let obj = {}; // создаем объект для формата JSON
-                    for (let i = 0; i < formData.length; i++) {
-                        obj[formData[i].getAttribute('name')] = formData[i].value;
-                    }
-
                     request.send(formData); // отправляем данные на сервер
-
+                    innerCode = form.innerHTML;
+                    form.innerHTML = '';
+                    form.appendChild(statusMessage);
                     request.addEventListener('readystatechange', function () { // смотрим состояние запроса
                         if (request.readyState < 4) {
                             resolve();
@@ -33,27 +36,55 @@ function forms() {
                 });
             }
 
-            // function clearInput() {
-            //     for (let i = 0; i < input.length; i++) {
-            //         input[i].value = '';
-            //     }
-            // }
-            postData()
-                .then(() => {
-                    statusMessage.innerHTML = '<img src=\"img/ajax-loader.gif\">';
-                })
-                .then(() => {
-                    statusMessage.innerHTML = '<img src=\"img/check.svg\">';
-                })
-                .catch(() => {
-                    statusMessage.innerHTML = '<img src=\"img/warning.svg\">';
-                });
+            function clearInput() {
+                for (let i = 0; i < input.length; i++) {
+                    input[i].value = '';
+                }
+                for (let i = 0; i < textarea.length; i++) {
+                    textarea[i].value = '';
+                }
+            }
+            function closeForm(status) {
+                statusMessage.innerHTML = status;
+                let timeLog = 0;
+                let closeFormTimer = setInterval(function() {
+                    timeLog = timeLog + 20;
+                    if (timeLog == 2000) {
+                        form.innerHTML = innerCode;
+                        clearInput();
+                        if (form.className.indexOf('popup') != -1) {
+                            let popupClass = document.querySelector('.' + form.className.slice(0, -5));
+                            popupClass.style.display = 'none';
+                            document.querySelector('body').style.overflow = '';
+                        }
+                        clearInterval(closeFormTimer);
+                    }
+                }, 20);
+            }
+
+            if (tel.value.length != 17) {
+                tel.style.border = '2px solid red';
+            } else {
+                tel.style.border = '';
+                postData()
+                    .then(() => {
+                        closeForm('<p>Идет отправка</p>');
+                    })
+                    .then(() => {
+                        closeForm('<p>Ваш запрос отправлен.<br>Наши менеджеры свжутся с вами.</p>');
+                    })
+                    .catch(() => {
+                        closeForm('<p>Произошла ошибка</p>');
+                    })
+            }
         });
     }
-    sendForm('.calculator-form-wrap');
-    sendForm('.form-container-wrap');
-    sendForm('.main-form');
-    sendForm('.popup-design-form-wrap');
+    let form = document.querySelectorAll('form');
+    form.forEach(function(e) {
+        if (!e.classList.contains('calculator-form')) {
+            sendForm(e);
+        }
+    });
 
 }
 

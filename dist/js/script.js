@@ -96,18 +96,18 @@
 function accordion() {
   var accordionHeading = document.querySelectorAll('.accordion-heading'),
       accordionBlock = document.querySelectorAll('.accordion-block');
-  var pt = 0,
-      pb = 0,
-      h = 0;
 
   function showAccordeonSlideFunction(i) {
+    var pt = 0,
+        pb = 0,
+        h = 0;
     var p = accordionBlock[i].querySelector('p');
     var showAccordeonSlide = setInterval(function () {
       if (pt < 3) {
         pt += 0.1;
         accordionBlock[i].style.paddingTop = pt + 'rem';
       } else if (h < p.clientHeight) {
-        h = h + 3;
+        h = h + 2;
         accordionBlock[i].style.height = h + 'px';
       } else if (pb < 3) {
         pb += 0.1;
@@ -119,17 +119,20 @@ function accordion() {
   }
 
   function hideAccordeonFunction(i) {
+    var pt = 0,
+        pb = 0,
+        h = 0;
     var p = accordionBlock[i].querySelector('p');
     var hideAccordeonSlide = setInterval(function () {
-      if (pt < 3) {
+      if (3 - pt > 0) {
         pt += 0.1;
-        accordionBlock[i].style.paddingTop = 3 - pt + 'rem';
-      } else if (h < p.clientHeight) {
-        h = h + 3;
-        accordionBlock[i].style.height = p.clientHeight - h + 'px';
-      } else if (pb < 3) {
+        accordionBlock[i].style.paddingTop = (3 - pt).toFixed(1) + 'rem';
+      } else if (p.clientHeight - h > 0) {
+        h = h + 2;
+        accordionBlock[i].style.height = Math.round(p.clientHeight - h) + 'px';
+      } else if (3 - pb > 0) {
         pb += 0.1;
-        accordionBlock[i].style.paddingBottom = 3 - pb + 'rem';
+        accordionBlock[i].style.paddingBottom = (3 - pb).toFixed(1) + 'rem';
       } else {
         clearInterval(hideAccordeonSlide);
       }
@@ -137,30 +140,77 @@ function accordion() {
   }
 
   accordionHeading.forEach(function (e, i) {
-    e.classList.remove('ui-accordion-header-active');
     e.addEventListener('click', function () {
-      e.classList.add('ui-accordion-header-active');
-      accordionBlock.forEach(function (elem, j) {
-        pt = 0;
-        pb = 0;
-        h = 0;
-
-        if (i == j && elem[j].classList.contains('accordion-slide-active')) {
-          return;
-        } else {
-          if (elem[j].classList.contains('accordion-slide-active')) {
-            hideAccordeonFunction(j);
-            showAccordeonSlideFunction(i);
-            elem[j].classList.remove('accordion-slide-active');
-            e[i].classList.add('accordion-slide-active');
-          }
-        }
+      accordionHeading.forEach(function (e) {
+        e.classList.remove('ui-accordion-header-active');
       });
+      e.classList.add('ui-accordion-header-active');
+
+      if (!accordionBlock[i].classList.contains('accordion-block-active')) {
+        accordionBlock.forEach(function (elem, j) {
+          if (elem.classList.contains('accordion-block-active')) {
+            elem.classList.remove('accordion-block-active');
+            hideAccordeonFunction(j);
+          }
+
+          if (j == accordionBlock.length - 1) {
+            accordionBlock[i].classList.add('accordion-block-active');
+            showAccordeonSlideFunction(i);
+          }
+        });
+      } else {
+        accordionBlock[i].classList.remove('accordion-block-active');
+        hideAccordeonFunction(i);
+      }
     });
   });
 }
 
 module.exports = accordion;
+
+/***/ }),
+
+/***/ "./src/js/parts/burger.js":
+/*!********************************!*\
+  !*** ./src/js/parts/burger.js ***!
+  \********************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+function burger() {
+  var btnBurger = document.querySelector('.burger'),
+      menuBurger = document.querySelector('.burger-menu'),
+      width = document.documentElement.clientWidth,
+      logOpen = 0;
+
+  function showBurger() {
+    if (logOpen == 0) {
+      menuBurger.style.display = 'block';
+      logOpen = 1;
+    } else {
+      menuBurger.style.display = '';
+      logOpen = 0;
+    }
+  }
+
+  function isWidth() {
+    if (width < 992) {
+      btnBurger.addEventListener('click', showBurger);
+    } else {
+      menuBurger.style.display = '';
+      logOpen = 0;
+      btnBurger.removeEventListener('click', showBurger);
+    }
+  }
+
+  isWidth();
+  window.addEventListener('resize', function () {
+    width = document.documentElement.clientWidth;
+    isWidth();
+  });
+}
+
+module.exports = burger;
 
 /***/ }),
 
@@ -197,19 +247,15 @@ function calsulator() {
   function pricingChange() {
     if (size.options.selectedIndex > 0 && material.options.selectedIndex > 0) {
       var price = sizePrices[size.options.selectedIndex] + materialPrices[material.options.selectedIndex];
-      console.log(price);
 
       if (options.options.selectedIndex > 0) {
         price = price + optionsPrices[options.options.selectedIndex];
       }
 
-      console.log(price);
-
       if (promocode.value == 'IWANTPOPART') {
         price = price * 0.7;
       }
 
-      console.log(price);
       priceInput.textContent = price;
     } else {
       priceInput.textContent = 'Для расчета нужно выбрать размер картины и материал картины';
@@ -260,12 +306,10 @@ function feedbackSlider() {
 
     var left = 0;
     slides[slideIndex - 1].style.left = '-100%';
-    console.log(slideIndex + ' ' + preventSlide);
+    var sliderAnimation = setInterval(function () {
+      left = left + 10;
 
-    if (slideIndex - preventSlide == 1 || preventSlide == slides.length && slideIndex == 1) {
-      var sliderAnimation = setInterval(function () {
-        left = left + 10;
-
+      if (slideIndex - preventSlide == 1 || preventSlide == slides.length && slideIndex == 1) {
         if (preventSlide == slides.length) {
           slides[slides.length - 1].style.left = left + 'px';
         } else {
@@ -273,24 +317,16 @@ function feedbackSlider() {
         }
 
         slides[slideIndex - 1].style.left = -width + left + 'px';
-
-        if (left >= width) {
-          preventSlide = slideIndex;
-          clearInterval(sliderAnimation);
-        }
-      }, 3);
-    } else {
-      var _sliderAnimation = setInterval(function () {
-        left = left + 10;
+      } else {
         slides[preventSlide - 1].style.left = -left + 'px';
         slides[slideIndex - 1].style.left = width - left + 'px';
+      }
 
-        if (left >= width) {
-          preventSlide = slideIndex;
-          clearInterval(_sliderAnimation);
-        }
-      }, 3);
-    }
+      if (left >= width) {
+        preventSlide = slideIndex;
+        clearInterval(sliderAnimation);
+      }
+    }, 3);
   }
 
   function plusSlides(n) {
@@ -336,30 +372,132 @@ function filter() {
       portfolioMenuItem.forEach(function (e) {
         e.classList.remove('active');
       });
-
-      if (e.className == 'granddad' || e.className == 'grandmother') {
-        portfolioBlock.forEach(function (elem) {
+      var classN = e.className,
+          log = 0;
+      e.classList.add('active');
+      portfolioBlock.forEach(function (elem) {
+        if (!elem.classList.contains(classN)) {
           elem.style.display = 'none';
-        });
+        } else {
+          log = 1;
+          elem.style.display = '';
+        }
+      });
+
+      if (log == 0) {
         portfolioNo.style.display = 'block';
       } else {
         portfolioNo.style.display = '';
-        portfolioBlock.forEach(function (elem) {
-          if (!elem.classList.contains(e.className)) {
-            elem.style.display = 'none';
-            portfolioNo.style.display = '';
-          } else {
-            elem.style.display = '';
-          }
-        });
       }
-
-      e.classList.add('active');
     });
   });
 }
 
 module.exports = filter;
+
+/***/ }),
+
+/***/ "./src/js/parts/forms.js":
+/*!*******************************!*\
+  !*** ./src/js/parts/forms.js ***!
+  \*******************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+function forms() {
+  function sendForm(e) {
+    var form = e,
+        statusMessage = document.createElement('div'),
+        input = form.querySelectorAll('input'),
+        textarea = form.querySelectorAll('textarea');
+    statusMessage.classList.add('status-message');
+    form.addEventListener('submit', function (event) {
+      var innerCode;
+      event.preventDefault();
+      var tel = form.querySelector('input[name=phone]');
+
+      function postData() {
+        return new Promise(function (resolve, reject) {
+          var request = new XMLHttpRequest(); // создаем запрос к серверу
+
+          request.open('POST', 'server.php'); // выставляем настройки запроса
+
+          request.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+          var formData = new FormData(form); //получаем все данные с формы
+
+          request.send(formData); // отправляем данные на сервер
+
+          innerCode = form.innerHTML;
+          form.innerHTML = '';
+          form.appendChild(statusMessage);
+          request.addEventListener('readystatechange', function () {
+            // смотрим состояние запроса
+            if (request.readyState < 4) {
+              resolve();
+            } else if (request.readyState == 4 && request.status == 200) {
+              resolve();
+            } else {
+              reject();
+            }
+          });
+        });
+      }
+
+      function clearInput() {
+        for (var i = 0; i < input.length; i++) {
+          input[i].value = '';
+        }
+
+        for (var _i = 0; _i < textarea.length; _i++) {
+          textarea[_i].value = '';
+        }
+      }
+
+      function closeForm(status) {
+        statusMessage.innerHTML = status;
+        var timeLog = 0;
+        var closeFormTimer = setInterval(function () {
+          timeLog = timeLog + 20;
+
+          if (timeLog == 2000) {
+            form.innerHTML = innerCode;
+            clearInput();
+
+            if (form.className.indexOf('popup') != -1) {
+              var popupClass = document.querySelector('.' + form.className.slice(0, -5));
+              popupClass.style.display = 'none';
+              document.querySelector('body').style.overflow = '';
+            }
+
+            clearInterval(closeFormTimer);
+          }
+        }, 20);
+      }
+
+      if (tel.value.length != 17) {
+        tel.style.border = '2px solid red';
+      } else {
+        tel.style.border = '';
+        postData().then(function () {
+          closeForm('<p>Идет отправка</p>');
+        }).then(function () {
+          closeForm('<p>Ваш запрос отправлен.<br>Наши менеджеры свжутся с вами.</p>');
+        }).catch(function () {
+          closeForm('<p>Произошла ошибка</p>');
+        });
+      }
+    });
+  }
+
+  var form = document.querySelectorAll('form');
+  form.forEach(function (e) {
+    if (!e.classList.contains('calculator-form')) {
+      sendForm(e);
+    }
+  });
+}
+
+module.exports = forms;
 
 /***/ }),
 
@@ -374,17 +512,41 @@ function gift() {
   var btnGift = document.querySelector('.fixed-gift'),
       popupGift = document.querySelector('.popup-gift'),
       btnClose = popupGift.querySelector('.popup-close');
-  btnGift.addEventListener('click', function () {
+  var btns = document.querySelectorAll('button');
+  var logFullScroll = 0;
+  btns.forEach(function (e) {
+    e.addEventListener('click', function () {
+      logFullScroll = 1;
+    });
+  });
+
+  function showGift() {
     btnGift.remove();
     popupGift.style.display = 'block';
+    document.querySelector('body').style.overflow = 'hidden';
+    logFullScroll = 1;
+  }
+
+  function hideGift() {
+    popupGift.style.display = '';
+    document.querySelector('body').style.overflow = '';
+  }
+
+  btnGift.addEventListener('click', function () {
+    showGift();
   });
   popupGift.addEventListener('click', function (e) {
     if (e.currentTarget == e.target) {
-      popupGift.style.display = '';
+      hideGift();
     }
   });
   btnClose.addEventListener('click', function () {
-    popupGift.style.display = '';
+    hideGift();
+  });
+  window.addEventListener('scroll', function () {
+    if (logFullScroll == 0 && window.scrollY >= document.documentElement.scrollHeight - document.documentElement.clientHeight) {
+      showGift();
+    }
   });
 }
 
@@ -448,6 +610,64 @@ module.exports = mainSlider;
 
 /***/ }),
 
+/***/ "./src/js/parts/masks.js":
+/*!*******************************!*\
+  !*** ./src/js/parts/masks.js ***!
+  \*******************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+function masks() {
+  var inputs = document.querySelectorAll('input'),
+      textArea = document.querySelector('textarea');
+  textArea.addEventListener('input', function (e) {
+    e.target.value = e.target.value.replace(/[^а-яё]/ig, '');
+  });
+  inputs.forEach(function (e) {
+    if (e.getAttribute('name') == 'name' || e.getAttribute('name') == 'message') {
+      e.addEventListener('input', function () {
+        e.value = e.value.replace(/[^а-яё0-9 ,.\-:"()!?/%*]/ig, '');
+      });
+    }
+
+    if (e.getAttribute('name') == 'phone') {
+      var input = e,
+          startL;
+      input.addEventListener('input', function (e) {
+        input.value = input.value.replace('+7 (', '');
+        input.value = input.value.replace(') ', '');
+        input.value = input.value.replace(')', '');
+        input.value = input.value.replace('-', '');
+        var s = input.value.slice(-1);
+        var sn = +s;
+
+        if (isNaN(sn) || s.charCodeAt(0) === 32) {
+          input.value = input.value.slice(0, input.value.length - 1);
+        } else if (e.data == null && startL == 3) {
+          input.value = input.value.slice(0, input.value.length - 1);
+        }
+
+        startL = input.value.length;
+
+        if (input.value.length < 3) {
+          input.value = "+7 (".concat(input.value.slice(0, 3), ")");
+          input.setSelectionRange(input.value.length - 1, input.value.length - 1);
+        } else if (input.value.length == 3) {
+          input.value = "+7 (".concat(input.value.slice(0, 3), ")");
+        } else if (input.value.length > 3 && input.value.length < 7) {
+          input.value = "+7 (".concat(input.value.slice(0, 3), ") ").concat(input.value.slice(3, 6));
+        } else if (input.value.length > 6) {
+          input.value = "+7 (".concat(input.value.slice(0, 3), ") ").concat(input.value.slice(3, 6), "-").concat(input.value.slice(6, 10));
+        }
+      });
+    }
+  });
+}
+
+module.exports = masks;
+
+/***/ }),
+
 /***/ "./src/js/parts/modalOrder.js":
 /*!************************************!*\
   !*** ./src/js/parts/modalOrder.js ***!
@@ -459,18 +679,29 @@ function modalOrder() {
   var btnOrder = document.querySelectorAll('.button-design'),
       popupDesign = document.querySelector('.popup-design'),
       popupClose = popupDesign.querySelector('.popup-close');
+
+  function showOrder() {
+    popupDesign.style.display = 'block';
+    document.querySelector('body').style.overflow = 'hidden';
+  }
+
+  function hideOrder() {
+    popupDesign.style.display = '';
+    document.querySelector('body').style.overflow = '';
+  }
+
   btnOrder.forEach(function (e) {
     e.addEventListener('click', function () {
-      popupDesign.style.display = 'block';
+      showOrder();
     });
   });
   popupDesign.addEventListener('click', function (e) {
     if (e.currentTarget == e.target) {
-      popupDesign.style.display = '';
+      hideOrder();
     }
   });
   popupClose.addEventListener('click', function () {
-    popupDesign.style.display = '';
+    hideOrder();
   });
 }
 
@@ -489,19 +720,43 @@ function modalConsultation() {
   var btnConsultation = document.querySelectorAll('.button-consultation'),
       popupConsultation = document.querySelector('.popup-consultation'),
       popupClose = popupConsultation.querySelector('.popup-close');
+  var startTime = new Date();
+
+  function showConsultation() {
+    popupConsultation.style.display = 'block';
+    document.querySelector('body').style.overflow = 'hidden';
+  }
+
+  function hideConsultation() {
+    popupConsultation.style.display = '';
+    document.querySelector('body').style.overflow = '';
+  }
+
   btnConsultation.forEach(function (e) {
     e.addEventListener('click', function () {
-      popupConsultation.style.display = 'block';
+      showConsultation();
     });
   });
   popupConsultation.addEventListener('click', function (e) {
     if (e.currentTarget == e.target) {
-      popupConsultation.style.display = '';
+      hideConsultation();
     }
   });
   popupClose.addEventListener('click', function () {
-    popupConsultation.style.display = '';
+    hideConsultation();
   });
+  var userTimer = setInterval(function () {
+    var time = Math.round((new Date() - startTime) / 1000);
+
+    if (time > 60 && time < 62) {
+      if (document.querySelector('body').style.overflow == '' || !document.querySelector('body').hasAttribute('style')) {
+        showConsultation();
+        clearInterval(userTimer);
+      } else {
+        clearInterval(userTimer);
+      }
+    }
+  }, 1000);
 }
 
 module.exports = modalConsultation;
@@ -547,45 +802,43 @@ module.exports = moreStyles;
 function sizesBlock() {
   var blockSizes = document.querySelectorAll('.sizes-block');
 
-  if (document.documentElement.clientWidth > 768) {
-    blockSizes.forEach(function (e, i) {
-      var p = e.querySelectorAll('p');
-      e.addEventListener('mouseover', function () {
-        e.querySelector('img').setAttribute('src', "img/sizes-".concat(i + 1, "-1.png"));
-        p.forEach(function (e) {
-          if (e.className != 'sizes-hit') {
-            e.style.display = 'none';
-          }
-        });
-      });
-      e.addEventListener('mouseout', function () {
-        e.querySelector('img').setAttribute('src', "img/sizes-".concat(i + 1, ".png"));
-        p.forEach(function (e) {
-          e.style.display = '';
-        });
-      });
-    });
-  } else {
-    blockSizes.forEach(function (e, i) {
-      var p = e.querySelectorAll('p'),
-          img = e.querySelector('img');
-      window.addEventListener('touchstart', function (elem) {
-        if (elem.target == p[0] || elem.target == p[1] || elem.target == p[2] || elem.target == p[3] || elem.target == img) {
-          img.setAttribute('src', "img/sizes-".concat(i + 1, "-1.png"));
-          p.forEach(function (e) {
-            if (e.className != 'sizes-hit') {
-              e.style.display = 'none';
-            }
-          });
-        } else {
-          img.setAttribute('src', "img/sizes-".concat(i + 1, ".png"));
-          p.forEach(function (e) {
-            e.style.display = '';
-          });
-        }
-      });
+  function showSize(p, img, i) {
+    img.setAttribute('src', "img/sizes-".concat(i + 1, "-1.png"));
+    p.forEach(function (e) {
+      if (e.className != 'sizes-hit') {
+        e.style.display = 'none';
+      }
     });
   }
+
+  function hideSize(p, img, i) {
+    img.setAttribute('src', "img/sizes-".concat(i + 1, ".png"));
+    p.forEach(function (e) {
+      e.style.display = '';
+    });
+  }
+
+  blockSizes.forEach(function (e, i) {
+    var p = e.querySelectorAll('p'),
+        img = e.querySelector('img');
+    e.addEventListener('mouseover', function () {
+      showSize(p, img, i);
+    });
+    e.addEventListener('mouseout', function () {
+      hideSize(p, img, i);
+    });
+  });
+  blockSizes.forEach(function (e, i) {
+    var p = e.querySelectorAll('p'),
+        img = e.querySelector('img');
+    window.addEventListener('touchstart', function (elem) {
+      if (elem.target == p[0] || elem.target == p[1] || elem.target == p[2] || elem.target == p[3] || elem.target == img) {
+        showSize(p, img, i);
+      } else {
+        hideSize(p, img, i);
+      }
+    });
+  });
 }
 
 module.exports = sizesBlock;
@@ -611,8 +864,10 @@ window.addEventListener('DOMContentLoaded', function () {
       calsulator = __webpack_require__(/*! ./parts/calsulator.js */ "./src/js/parts/calsulator.js"),
       sizesBlock = __webpack_require__(/*! ./parts/sizesBlock.js */ "./src/js/parts/sizesBlock.js"),
       feedbackSlider = __webpack_require__(/*! ./parts/feedbackSlider.js */ "./src/js/parts/feedbackSlider.js"),
-      accordion = __webpack_require__(/*! ./parts/accordion.js */ "./src/js/parts/accordion.js"); //forms = require('./parts/forms.js');
-
+      accordion = __webpack_require__(/*! ./parts/accordion.js */ "./src/js/parts/accordion.js"),
+      burger = __webpack_require__(/*! ./parts/burger.js */ "./src/js/parts/burger.js"),
+      forms = __webpack_require__(/*! ./parts/forms.js */ "./src/js/parts/forms.js"),
+      masks = __webpack_require__(/*! ./parts/masks.js */ "./src/js/parts/masks.js");
 
   mainSlider();
   modalOrder();
@@ -623,7 +878,10 @@ window.addEventListener('DOMContentLoaded', function () {
   calsulator();
   sizesBlock();
   feedbackSlider();
-  accordion(); //forms();
+  accordion();
+  burger();
+  forms();
+  masks();
 });
 
 /***/ })
